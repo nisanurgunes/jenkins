@@ -1,26 +1,20 @@
-# Build aşaması: Maven kullanarak projeyi derle
-FROM maven:3.8.5-openjdk-17-slim AS build
+# Temel Jenkins imajını kullan
+FROM jenkins/jenkins:lts
 
-# Jenkins çalışma dizinine geç
-WORKDIR /jenkins
+# Kullanıcı değişimi (root'tan jenkins'e)
+USER root
 
-# Proje dosyalarını konteynere kopyala
-COPY . .
+# Docker'ı kurmak için gerekli bağımlılıkları yükle
+RUN apt-get update && \
+    apt-get install -y docker.io && \
+    apt-get clean
 
-# Maven ile projeyi temizle ve paketle
-RUN mvn clean package
+# Jenkins kullanıcısına Docker daemon'a erişim izni ver
+RUN usermod -aG docker jenkins
 
-# Çalıştırma aşaması: OpenJDK 17 üzerinde Jenkins'i çalıştır
-FROM openjdk:17-jdk-slim
+# Jenkins kullanıcıya geri dön
+USER jenkins
 
-# Uygulama çalışma dizini oluştur
-WORKDIR /app
-
-# Jenkins için ayrı bir çalışma dizinine geç
-WORKDIR /jenkins
-
-# Build aşamasından çıkan jar dosyasını çalışma dizinine kopyala
-COPY --from=build /jenkins/target/*.jar ./jenkins.jar
-
-# Jenkins'i çalıştır
-ENTRYPOINT ["java", "-jar", "./jenkins.jar"]
+# Jenkins için gerekli portları aç
+EXPOSE 8080
+EXPOSE 50000
