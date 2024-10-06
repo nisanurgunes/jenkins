@@ -18,4 +18,5 @@ EXPOSE 8080
 EXPOSE 50000
 
 # Jenkins'i başlat
-CMD ["java", "-jar", "/usr/share/jenkins/jenkins.war"]
+CMD ["jenkins.sh"]
+
